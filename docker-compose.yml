@@ -1,0 +1,30 @@
+version: '3'
+
+services:
+
+  api:
+    container_name: iot_api
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    command: tail -f /dev/null # python main.py
+    working_dir: /app
+    ports:
+    - "5010:8080"
+    volumes:
+    - ./app:/app
+
+  notebook_data_science:
+    container_name: iot_notebook
+    image: maciomatheus/jupyter_notebook_data_science
+    environment:
+      JUPYTER_ENABLE_LAB: 1
+      NB_UID: 10011
+      GRANT_SUDO: "yes"
+    user: root
+    ports:
+    - 8888:8888
+    - 6007:6006
+    volumes:
+    - ./notebooks:/home/jovyan/work
+    command: start-notebook.sh --NotebookApp.token=''
