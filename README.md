@@ -28,3 +28,8 @@ http://<your-ip>:8888/tree
 ```sh
 https://hub.docker.com/r/maciomatheus/jupyter_notebook_data_science/
 ```
+
+##### Arduino dependences
+```sh
+    ArduinoJson:5.13.3
+```
