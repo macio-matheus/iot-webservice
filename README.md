@@ -1,6 +1,9 @@
 # IoT WebService
 WebService for interaction with a NodeMCU device 
 
+### Architecture
+
+![Architecture]()
 
 ## Usage
 First of all, build the container using docker-compose and then you can 
