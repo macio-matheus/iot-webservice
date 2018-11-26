@@ -50,8 +50,8 @@ void loop() {
  
     HTTPClient http;    //Declare object of class HTTPClient
     
-    char* host = "http://localhost"; 
-    char* port = "5010";
+    String host = "http://localhost"; 
+    String port = "5010";
     
     http.begin(host + ":" + port + "/echo");      //Specify request destination
     http.addHeader("Content-Type", "application/json");  //Specify content-type header
