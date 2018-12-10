@@ -11,6 +11,8 @@ services:
     working_dir: /app
     ports:
     - "5010:8080"
+    depends_on:
+      - mongo
     volumes:
     - ./app:/app
 
@@ -28,3 +30,15 @@ services:
     volumes:
     - ./notebooks:/home/jovyan/work
     command: start-notebook.sh --NotebookApp.token=''
+
+  mongo:
+    container_name: db_mongo_iot
+    image: mongo:3.4.2
+    hostname: mongo_db_iot
+    ports:
+    - "27018:27017"
+    command: mongod --smallfiles
+    environment:
+    - MONGO_INITDB_ROOT_USERNAME=root
+    - MONGO_INITDB_ROOT_PASSWORD=root
+    - MONGO_DB_NAME=db_iot
