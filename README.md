@@ -25,6 +25,7 @@ http://<your-ip>:8888/tree
     - 8888 => Jupyter
     - 6007 => Tensorboard
     - 5007 => Your App
+    - 27018 => Your App
 ```
 
 ## DockerHub
