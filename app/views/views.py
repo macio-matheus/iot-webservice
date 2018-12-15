@@ -28,6 +28,7 @@ def get_data():  # pragma: no cover
     """Simple echo service."""
 
     lst = get_all()
+
     return jsonify({'data': lst})
 
 

@@ -2,7 +2,7 @@ $(function(){
 
     HOST_NODE = 'http://localhost';
 
-    setInterval(function(){ execute_consult(); }, 3000)
+    setInterval(function(){ execute_consult(); }, 5000)
 })
 
 function execute_consult() {
@@ -13,7 +13,6 @@ function execute_consult() {
       dataType: 'text'
     }).done(function( response ) {
         response = $.parseJSON(response);
-        console.log(response.data[0])
-        $('#show_data').html(JSON.stringify(response.data);
+        $('#show_data').html(JSON.stringify(response.data.reverse()));
     });
 }
