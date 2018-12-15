@@ -2,43 +2,47 @@ version: '3'
 
 services:
 
-  api:
+  iot_api:
     container_name: iot_api
     build:
       context: ./app
       dockerfile: Dockerfile
-    command: tail -f /dev/null # python main.py
+    command: python main.py
     working_dir: /app
-    ports:
-    - "5010:8080"
-    depends_on:
-      - mongo
-    volumes:
-    - ./app:/app
-
-  notebook_data_science:
-    container_name: iot_notebook
-    image: maciomatheus/jupyter_notebook_data_science
-    environment:
-      JUPYTER_ENABLE_LAB: 1
-      NB_UID: 10011
-      GRANT_SUDO: "yes"
-    user: root
-    ports:
-    - 8888:8888
-    - 6007:6006
-    volumes:
-    - ./notebooks:/home/jovyan/work
-    command: start-notebook.sh --NotebookApp.token=''
-
-  mongo:
-    container_name: db_mongo_iot
-    image: mongo:3.4.2
-    hostname: mongo_db_iot
-    ports:
-    - "27018:27017"
-    command: mongod --smallfiles
     environment:
     - MONGO_INITDB_ROOT_USERNAME=root
     - MONGO_INITDB_ROOT_PASSWORD=root
     - MONGO_DB_NAME=db_iot
+    ports:
+    - "8181:5000"
+    depends_on:
+      - iot_mongo
+    volumes:
+    - ./app:/app
+
+  iot_mongo:
+    container_name: db_mongo_iot
+    image: mongo:3.4.2
+    ports:
+    - "27017:27017"
+    command: mongod --smallfiles
+#    volumes:
+#    - "$PWD/mongo-entrypoint/:/docker-entrypoint-initdb.d/"
+    environment:
+    - MONGO_INITDB_ROOT_USERNAME=root
+    - MONGO_INITDB_ROOT_PASSWORD=root
+
+  iot_front:
+    container_name: iot_front
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    working_dir: /app
+    command: bash -c " echo \"Start copying node modules\" && rsync -a -v --ignore-existing /app_temp/node_modules /app && nodemon server.js" # tail -f /dev/null
+    ports:
+    - "80:5001"
+    volumes:
+    - ./front:/app
+    depends_on:
+      - iot_api
+      - iot_mongo

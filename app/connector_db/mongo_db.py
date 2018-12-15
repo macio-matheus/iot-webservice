@@ -2,8 +2,8 @@ import os
 
 from pymongo import MongoClient
 
-client = MongoClient('db_mongo_iot', 27018, username=os.environ['MONGO_INITDB_ROOT_USERNAME'],
-                     password=os.environ['MONGO_INITDB_ROOT_PASSWORD'])
+client = MongoClient('mongodb://db_mongo_iot', 27017, username=os.environ['MONGO_INITDB_ROOT_USERNAME'],
+                     password=os.environ['MONGO_INITDB_ROOT_PASSWORD'])['admin']
 
 collection_name = 'data_from_device'
 
@@ -22,5 +22,5 @@ def get_document_by_id(document_id, collection=collection_name):
 
 def get_all(collection=collection_name):
     document_obj = client[collection]
-    documents = document_obj.find()
+    documents = document_obj.find({}, {'_id': False})
     return list(documents)

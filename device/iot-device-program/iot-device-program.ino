@@ -2,73 +2,159 @@
 #include <ESP8266WiFi.h>
 #include <ArduinoJson.h>
 
-/* Set these to your desired credentials. */
-const char* ssid = "";
-const char* password = "";
+// Set these to your desired credentials.
+const char* ssid = "M&T2.4G";
+const char* password = "seinaovei";
 
-int makeRequestHttpPost() {
-  
-  String host = "http://78440e12.ngrok.io/echo"; 
-  
-  if (WiFi.status() == WL_CONNECTED) { //Check WiFi connection status
- 
-    StaticJsonBuffer<300> JSONbuffer;   //Declaring static JSON buffer
-    JsonObject& JSONencoder = JSONbuffer.createObject(); 
- 
-    //    JSONencoder["sensorType"] = "Temperature";
-    // 
-    //    JsonArray& values = JSONencoder.createNestedArray("values"); //JSON array
-    //    values.add(20); //Add value to array
-    //    values.add(21); //Add value to array
-    
-    JSONencoder["message"] = "HelloWorld";
- 
-    char JSONmessageBuffer[300];
-    JSONencoder.prettyPrintTo(JSONmessageBuffer, sizeof(JSONmessageBuffer));
+const char* host = "http://625a33d1.ngrok.io/iot";
 
-    HTTPClient http; //Declare object of class HTTPClient
-    
-    Serial.println(host);
-    http.begin(host);      //Specify request destination
-    http.addHeader("Content-Type", "application/json");  //Specify content-type header
-    
-    int httpCode = http.POST(JSONmessageBuffer);   //Send the request JSONmessageBuffer
-    if (httpCode == 200) {
-      String payload = http.getString();  //Get the response payload
-      Serial.println(payload);    //Print request response payload
-      Serial.println(httpCode);   //Print HTTP return code
-    } else {
-      Serial.printf("[HTTP] POST... failed, error: %s\n", http.errorToString(httpCode).c_str());
+const char* humTempType = "HumTemp";
+const char* touchType = "Touch";
+const char* ldrType = "Luminosity";
+
+// DHT Sensor
+int DHpin = D0;
+byte dat [5];
+byte readData () {
+  byte data;
+  for (int i = 0; i < 8; i ++) {
+    if (digitalRead(DHpin) == LOW) {
+      while (digitalRead(DHpin) == LOW);
+      delayMicroseconds(30);
+      if (digitalRead(DHpin) == HIGH)
+        data |= (1 << (7-i));
+      while (digitalRead(DHpin) == HIGH);
+     }
+  }
+  return data;
+}
+
+int makeHttpRequest(char *sensorType, float arr[]) {
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.println("WiFi Connected");
+
+    StaticJsonBuffer<200> jsonBuffer;
+    JsonObject& body = jsonBuffer.createObject();
+
+    if  (sensorType == humTempType) {
+
+      body["sensorType"] = "HumTemp";
+      body["humidity"] = arr[0];
+      body["temperature"] = arr[1];
+
+      sendRequest(body);
+    } else if (sensorType == touchType) {
+      body["sensorType"] = "Touch";
+      body["touched"] = "true";
+
+      sendRequest(body);
+    } else if (sensorType == ldrType) {
+      body["sensorType"] = "Luminosity";
+      body["lumens"] = arr[0];
     }
-    http.end();  //Close connection
 
-    return httpCode;
-    
+    StaticJsonBuffer<200> jsonFinalBuffer;
+    JsonObject& finalBody = jsonFinalBuffer.createObject();
+
+    finalBody['data'] = body
+    sendRequest(finalBody);
   } else {
- 
+
     Serial.println("Error in WiFi connection");
     return 0;
-  }  
+  }
 }
 
-int getLdrVoltage() {
+void sendRequest(JsonObject& body) {
+  HTTPClient http;
+  http.begin(host);
+  http.addHeader("Content-Type", "application/json");
+
+  char JSONmessageBuffer[300];
+  body.prettyPrintTo(JSONmessageBuffer, sizeof(JSONmessageBuffer));
+  Serial.println(JSONmessageBuffer);
+
+  int httpCode = http.POST(JSONmessageBuffer);
+  String payload = http.getString();
+
+  Serial.println(httpCode);
+  Serial.println(payload);
+
+  http.end();
+}
+
+void getLdrVoltage() {
   // read the input on analog pin 0:
   int sensorValue = analogRead(A0);
-  
+
   // Convert the analog reading (which goes from 0 - 1023) to a voltage (0 - 5V):
   float voltage = sensorValue * (5.0 / 1023.0);
-  
+
   // print out the value you read:
   Serial.println(voltage);
-  return voltage;
+
+  float arr[1];
+  arr[0] = voltage;
+
+  makeHttpRequest("Luminosity", arr);
 }
 
-void setup() {
-  Serial.begin(9600);
+void getTempAndHumidity() {
+  String hum;
+  String temp;
 
+  digitalWrite(DHpin, LOW);
+  delay(30);
+
+  digitalWrite(DHpin, HIGH);
+  delayMicroseconds(40);
+
+  pinMode(DHpin, INPUT);
+  while (digitalRead(DHpin) == HIGH);
+  delayMicroseconds(80);
+  if (digitalRead(DHpin) == LOW);
+  delayMicroseconds(80);
+
+  for (int i = 0; i < 4; i ++)
+    dat[i] = readData();
+
+  pinMode(DHpin, OUTPUT);
+  digitalWrite(DHpin, HIGH);
+
+  hum = String(dat[0]) + String(".") + String(dat[1]);
+  temp = String(dat[2]) + String(".") + String(dat[3]);
+
+  float arr[2];
+  arr[0] = hum.toFloat();
+  arr[1] = temp.toFloat();
+
+  makeHttpRequest("HumTemp", arr);
+
+}
+
+// -----------------------------------------------------------------------------------------------------------------------
+
+// Metal Sensor
+int touchButton = D7;
+int val;
+
+void getTouch() {
+  val = digitalRead(touchButton);
+
+  if (val == HIGH) {
+    Serial.println("Touched");
+    float arr[1];
+    arr[0] = val;
+    makeHttpRequest("Touch", arr);
+  }
+}
+
+// -----------------------------------------------------------------------------------------------------------------------
+
+void setup () {
+  Serial.begin(115200);
   WiFi.begin(ssid, password);
 
-  Serial.print("Connecting");
   while (WiFi.waitForConnectResult() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
@@ -76,18 +162,19 @@ void setup() {
 
   Serial.print("Connected, IP address: ");
   Serial.println(WiFi.localIP());
+
+  pinMode(DHpin, OUTPUT);
+  pinMode(touchButton, INPUT);
 }
 
-void loop() {
+void loop () {
+  if (WiFi.status() == WL_CONNECTED) {
+    getTempAndHumidity();
+    getTouch();
+    getLdrVoltage();
+  } else {
+    Serial.println("No internet...");
+  }
 
-  Serial.println("Run program!");
-
-  Serial.printf("Get LDR Voltage..");
-  getLdrVoltage();
-
-  Serial.printf("Make HTTP POST..");
-  makeRequestHttpPost();
- 
-  delay(20000);  //Send a request every 30 seconds
- 
+  delay(10000);
 }

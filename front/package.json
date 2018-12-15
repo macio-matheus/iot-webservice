@@ -1,0 +1,28 @@
+{
+  "name": "iot_front",
+  "version": "1.0.0",
+  "description": "Iot Front-end",
+  "author": "Mácio Matheus Santos de Arruda",
+  "main": "server.js",
+  "scripts": {
+    "start": "nodemon server.js"
+  },
+  "dependencies": {
+    "bluebird": "^3.5.1",
+    "bootstrap": "4.0.0",
+    "cors": "2.8.4",
+    "express": "4.16.1",
+    "express-fileupload": "0.4.0",
+    "feather-icons": "4.5.0",
+    "form-data": "2.3.1",
+    "jquery": "3.3.1",
+    "jquery-csv": "^0.8.9",
+    "moment": "2.20.1",
+    "nodemon": "1.14.12",
+    "pdfobject": "2.0.201604172",
+    "popper.js": "1.12.9",
+    "pug": "^2.0.3",
+    "randomstring": "1.1.5",
+    "request": "2.83.0"
+  }
+}

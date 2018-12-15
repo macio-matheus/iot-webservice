@@ -6,5 +6,3 @@ WORKDIR /app
 # INSTALL DEPENDENCIES
 COPY requirements.txt /app
 RUN pip install -r requirements.txt
-
-EXPOSE 8080
