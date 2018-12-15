@@ -3,10 +3,10 @@
 #include <ArduinoJson.h>
 
 // Set these to your desired credentials.
-const char* ssid = "M&T2.4G";
-const char* password = "seinaovei";
+const char* ssid = "NAOVEMQUENAOTEM";
+const char* password = "12345678@";
 
-const char* host = "http://625a33d1.ngrok.io/iot";
+const char* host = "http://31008169.ngrok.io/insert_data";
 
 const char* humTempType = "HumTemp";
 const char* touchType = "Touch";
