@@ -3,8 +3,8 @@
 #include <ArduinoJson.h>
 
 // Set these to your desired credentials.
-const char* ssid = "NAOVEMQUENAOTEM";
-const char* password = "12345678@";
+const char* ssid = "";
+const char* password = "";
 
 const char* host = "http://31008169.ngrok.io/insert_data";
 
