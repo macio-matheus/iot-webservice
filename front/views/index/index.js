@@ -1,6 +1,6 @@
 $(function(){
 
-    HOST_NODE = 'http://localhost';
+    HOST_NODE = 'http://dec454f9.ngrok.io';//'http://localhost';
 
     setInterval(function(){ execute_consult(); }, 5000)
 })
